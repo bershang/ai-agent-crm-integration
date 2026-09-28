@@ -1,0 +1,29 @@
+{
+  "name": "ai-agent-crm-integration",
+  "version": "1.0.0",
+  "description": "Reference integration layer connecting AI agent webhooks to CRM records, with mock and Microsoft Dynamics 365 modes.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node scripts/check-syntax.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "conversational-ai",
+    "agent-assist",
+    "dynamics-365",
+    "dataverse",
+    "webhooks",
+    "oauth2",
+    "integration"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

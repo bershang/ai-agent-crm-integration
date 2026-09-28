@@ -1,0 +1,37 @@
+{
+  "task": {
+    "entitySet": "tasks",
+    "fields": {
+      "subject": "subject",
+      "firstName": "new_contactfirstname",
+      "lastName": "new_contactlastname",
+      "email": "new_contactemail",
+      "phone": "new_contactphone",
+      "csat": "new_customercsat",
+      "summary": "new_interactionsummary",
+      "title": "new_interactiontitle",
+      "transcription": "new_agenttranscription"
+    }
+  },
+  "case": {
+    "entitySet": "incidents",
+    "fields": {
+      "interactionSummary": "new_interactionsummary",
+      "criticalPoints": "new_criticalpoints",
+      "bestAction": "new_bestaction",
+      "nextSteps": "new_nextsteps"
+    }
+  },
+  "opportunity": {
+    "entitySet": "opportunities",
+    "fields": {
+      "title": "name",
+      "customerNeed": "new_customerneed",
+      "requiredServices": "new_requiredservices",
+      "ownership": "new_ownership",
+      "challenges": "new_challenges",
+      "solutionProposed": "new_solutionproposed",
+      "nextSteps": "new_nextsteps"
+    }
+  }
+}

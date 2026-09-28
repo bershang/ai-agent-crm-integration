@@ -1,0 +1,33 @@
+{
+  "interaction_id": "demo-interaction-001",
+  "emitted_at": "2026-01-15T10:30:00Z",
+  "call_ended": false,
+  "custom_callback_metadata": { "call_id": "demo-call-001" },
+  "transcript": {
+    "segments": [
+      { "segment_id": "s1", "is_external": true, "text": "We need a faster way to route support requests.", "start_time": 1.2, "end_time": 4.5 },
+      { "segment_id": "s2", "is_external": false, "text": "I can capture the requirements and arrange a technical follow-up.", "start_time": 5.0, "end_time": 9.1 }
+    ]
+  },
+  "object_completions": {
+    "call_form": {
+      "contact": {
+        "customer_name": "Alex Morgan",
+        "email": "alex.morgan@example.com",
+        "phone": "+1 202 555 0100"
+      },
+      "qualification": {
+        "customer_need": "Automate support request routing",
+        "required_services": "Conversational AI and CRM integration",
+        "main_challenge": "Manual triage",
+        "critical_points": "Routing accuracy and CRM traceability",
+        "best_action": "Schedule a technical discovery session"
+      }
+    }
+  },
+  "automations": {
+    "interaction-summary": "The customer is evaluating conversational AI to reduce manual support triage.",
+    "next-steps": "Schedule a technical discovery session and validate CRM fields.",
+    "csat": "Positive"
+  }
+}

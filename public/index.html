@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Agent CRM Integration</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color: #172033; background: #f5f7fb; }
+    body { margin: 0; }
+    header { padding: 24px; background: #111827; color: white; display:flex; justify-content:space-between; gap:20px; align-items:center; }
+    header h1 { margin:0; font-size:22px; } header p { margin:5px 0 0; color:#cbd5e1; }
+    .auth { display:flex; gap:8px; align-items:center; } input, button { padding:9px 11px; border-radius:8px; border:1px solid #cbd5e1; }
+    button { cursor:pointer; background:#fff; } main { max-width:1200px; margin:auto; padding:24px; display:grid; grid-template-columns:2fr 1fr; gap:18px; }
+    .stack { display:grid; gap:18px; align-content:start; } .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 8px 24px rgba(15,23,42,.04); }
+    .card h2 { margin:0; font-size:16px; } .head { padding:16px 18px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; }
+    .body { padding:18px; } .meta { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .meta div { background:#f8fafc; border-radius:10px; padding:10px; } .label { font-size:11px; color:#64748b; text-transform:uppercase; } .value { margin-top:4px; word-break:break-word; }
+    .bubble { padding:10px 12px; border-radius:12px; margin:8px 0; background:#eef2ff; } .bubble.customer { background:#ecfdf5; }
+    .small { color:#64748b; font-size:12px; } .actions { display:grid; gap:8px; } .actions button { text-align:left; }
+    pre { white-space:pre-wrap; word-break:break-word; background:#0f172a; color:#e2e8f0; border-radius:10px; padding:12px; max-height:300px; overflow:auto; }
+    .status { font-size:12px; color:#64748b; } details { margin:8px 0; } summary { cursor:pointer; font-weight:600; }
+    @media(max-width:850px){ main{grid-template-columns:1fr;} header{align-items:flex-start; flex-direction:column;} .meta{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<header>
+  <div><h1>AI Agent → CRM Integration</h1><p>Webhook normalization, dynamic mapping and Dynamics 365 / mock CRM synchronization</p></div>
+  <div class="auth"><input id="token" type="password" placeholder="DEMO_API_TOKEN" /><button id="saveToken">Use token</button></div>
+</header>
+<main>
+  <section class="stack">
+    <article class="card"><div class="head"><h2>Interaction context</h2><span id="status" class="status">Waiting</span></div><div class="body"><div id="meta" class="meta"></div></div></article>
+    <article class="card"><div class="head"><h2>Transcript</h2><span id="segments" class="small"></span></div><div id="transcript" class="body"></div></article>
+    <article class="card"><div class="head"><h2>AI generations</h2></div><div id="generations" class="body"></div></article>
+  </section>
+  <aside class="stack">
+    <article class="card"><div class="head"><h2>CRM actions</h2></div><div class="body"><div class="actions">
+      <button data-target="task">Sync Task</button><button data-target="case">Sync Case</button><button data-target="opportunity">Sync Opportunity</button><button id="mockState">View mock CRM state</button>
+    </div><pre id="actionResult">Register CRM context and send a webhook to begin.</pre></div></article>
+    <article class="card"><div class="head"><h2>Dynamic form data</h2></div><div id="forms" class="body"></div></article>
+  </aside>
+</main>
+<script>
+  const tokenInput = document.querySelector('#token');
+  const result = document.querySelector('#actionResult');
+  let current = null;
+  tokenInput.value = sessionStorage.getItem('demoApiToken') || '';
+  document.querySelector('#saveToken').onclick = () => { sessionStorage.setItem('demoApiToken', tokenInput.value.trim()); load(); };
+
+  function headers(extra = {}) { return { 'x-demo-token': tokenInput.value.trim(), ...extra }; }
+  function escapeHtml(value){ return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+  async function api(url, options={}) {
+    const response = await fetch(url, { ...options, cache:'no-store', headers: headers(options.headers || {}) });
+    const data = await response.json(); if(!response.ok) throw new Error(data.error || `HTTP ${response.status}`); return data;
+  }
+  function render(data){
+    current=data; document.querySelector('#status').textContent = data.call_ended ? 'Ended' : 'Active';
+    document.querySelector('#meta').innerHTML = [
+      ['Interaction ID',data.interaction_id],['Call ID',data.call_id],['Customer',[data.contact?.firstName,data.contact?.lastName].filter(Boolean).join(' ')],['Updates',data.update_count]
+    ].map(([k,v])=>`<div><div class="label">${escapeHtml(k)}</div><div class="value">${escapeHtml(v || '-')}</div></div>`).join('');
+    const transcript=data.transcript||[]; document.querySelector('#segments').textContent=`${transcript.length} segments`;
+    document.querySelector('#transcript').innerHTML = transcript.length ? transcript.map(s=>`<div class="bubble ${s.speaker}"><strong>${escapeHtml(s.speaker_label)}:</strong> ${escapeHtml(s.text)}</div>`).join('') : '<span class="small">No transcript yet.</span>';
+    const gens=data.generations||[]; document.querySelector('#generations').innerHTML = gens.length ? gens.map(g=>`<div><strong>${escapeHtml(g.label)}</strong><p>${escapeHtml(g.value)}</p></div>`).join('') : '<span class="small">No AI generations yet.</span>';
+    const forms=data.fill_forms||[]; document.querySelector('#forms').innerHTML = forms.length ? forms.map(s=>`<details><summary>${escapeHtml(s.label)}</summary>${s.fields.map(f=>`<p><strong>${escapeHtml(f.label)}:</strong> ${escapeHtml(f.value ?? '-')}</p>`).join('')}</details>`).join('') : '<span class="small">No form data yet.</span>';
+  }
+  async function load(){
+    if(!tokenInput.value.trim()) return;
+    try { const data=await api('/api/active-interaction'); if(data.active===false){ document.querySelector('#status').textContent='No active interaction'; return; } render(data); }
+    catch(error){ document.querySelector('#status').textContent=error.message; }
+  }
+  document.querySelectorAll('[data-target]').forEach(button => button.onclick = async () => {
+    if(!current?.interaction_id) return; result.textContent='Syncing...';
+    try { result.textContent=JSON.stringify(await api(`/api/interactions/${encodeURIComponent(current.interaction_id)}/sync-${button.dataset.target}`, {method:'POST',headers:{'content-type':'application/json'},body:'{}'}),null,2); }
+    catch(error){ result.textContent=error.message; }
+  });
+  document.querySelector('#mockState').onclick = async () => { try{ result.textContent=JSON.stringify(await api('/api/mock-crm'),null,2); } catch(error){ result.textContent=error.message; } };
+  load(); setInterval(load,5000);
+</script>
+</body>
+</html>

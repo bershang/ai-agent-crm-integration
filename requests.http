@@ -1,0 +1,27 @@
+@baseUrl = http://localhost:3000
+@token = replace-with-your-local-token
+
+### Health (public)
+GET {{baseUrl}}/health
+
+### Register CRM context
+POST {{baseUrl}}/api/interaction-context
+Content-Type: application/json
+x-demo-token: {{token}}
+
+< ./examples/crm-context.json
+
+### Send AI Agent / Agent Assist webhook
+POST {{baseUrl}}/webhook/agent-assist
+Content-Type: application/json
+x-demo-token: {{token}}
+
+< ./examples/webhook-payload.json
+
+### View active normalized interaction
+GET {{baseUrl}}/api/active-interaction
+x-demo-token: {{token}}
+
+### View mock CRM writes
+GET {{baseUrl}}/api/mock-crm
+x-demo-token: {{token}}
